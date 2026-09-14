@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+
   pull_request:
     branches:
       - main
@@ -34,8 +35,8 @@ jobs:
           python -m compileall src app.py
 
 
-  build-docker:
-    name: Build Docker Image
+  build-and-push:
+    name: Build and Push Docker Image
     needs: integration
     runs-on: ubuntu-latest
 
@@ -44,12 +45,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: false
-          tags: studentperformance-app:latest
+        run: |
+          docker build -t sakshamgupta812/studentperformance-app:latest .
+
+      - name: Push Docker Image
+        run: |
+          docker push sakshamgupta812/studentperformance-app:latest
